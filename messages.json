@@ -1,0 +1,7 @@
+{
+    "help" : "<@{userToTag}> To get your post voted by @{steemAccount} , just type in ` {prefix}upvote (postlink)`. The postlink can be from steemit, or busy, or any other site that follow the @author/permlink format. {botCommandRoleName} can use ` {prefix}add (steem name)` to add people to the whitelist and ` {prefix}remove (steem name)` to remove them from the whitelist. ` {prefix}value {Vote Weight(Between 0.01 and 100)}` can be used to find the bot's value at a particular percent.",
+
+    "version" : "<@{userToTag}> The bot version that is being used is {version}.",
+
+    "postContaintsBlacklistedTags" : "<@{userToTag}> Your post has a blacklisted tag. We won't vote for this post."
+}
