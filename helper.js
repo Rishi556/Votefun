@@ -25,6 +25,8 @@ function shareAnElement(arrayOne, arrayTwo){
 //STEEM STUFF
 var steem = require("steem")
 
+steem.api.setOptions({url: 'https://anyx.io'})
+
 function getVPOfAccount(account, callback){
     steem.api.getAccounts([account], function (err, response) {
         var secondsago = (new Date - new Date(response[0].last_vote_time + "Z")) / 1000;

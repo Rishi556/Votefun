@@ -39,7 +39,9 @@ loadWhitelist()
 loadTimes()
 updateMessagesToUser()
 
-var client = new dsteem.Client('https://api.steemit.com')
+steem.api.setOptions({url: 'https://anyx.io'})
+
+var client = new dsteem.Client('https://anyx.io')
 
 const bot = new Discord.Client();
 
