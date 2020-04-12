@@ -11,7 +11,6 @@
     "minTimeNotWhitelisted" : 30,
     "maxTimeNotWhitelisted" : 4320,
     "minimumPowerToVote" : 80,
-    "blissfishApiKey" : "",
     "voteWhiteListed" : 100,
     "voteNonWhiteListed" : 25,
     "privateActiveKey" : "5THEPRIVATEACTIVEKEY",

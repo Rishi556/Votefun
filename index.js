@@ -29,7 +29,6 @@ var extraMessage = config["extraMessage"]
 var voteWhiteListed = config["voteWhiteListed"]
 var voteNonWhiteListed = config["voteNonWhiteListed"]
 var allowComments = config["allowComments"]
-var blissfishApiKey = config["blissfishApiKey"]
 var leaveComment = config["leaveComment"]
 var blacklistedTags = config["blacklistedTags"]
 var whitelistOnlyMode = config["whitelistOnlyMode"]
@@ -308,9 +307,6 @@ function voteNow(wif, voter, author, permlink, weight, message, member) {
         writeTimes()
 
         if (member) {
-            if (blissfishApiKey != "" || blissfishApiKey != null) {
-                sendBlissFishBidWithApi(blissfishApiKey, author, permlink)
-            }
             message.channel.send("<@" + message.author.id + "> Sucessfully voted on your post." + extraMessage)
         } else {
             message.channel.send("<@" + message.author.id + "> Sucessfully voted on your post. You aren't whitelisted." + extraMessage)
@@ -327,24 +323,6 @@ function makeComment(wif, author, permlink, voter, permlink, comment) {
     }), function(err, result) {
         console.log("Left comment on : " + author + " " + permlink)
     });
-}
-
-function sendBlissFishBidWithApi(key, author, permlink) {
-    var url = 'http://198.245.55.162:3000/submit';
-    var headers = {
-        'key': key
-    }
-    var form = {
-        "post": "@" + author + "/" + permlink
-    };
-
-    request.post({
-        url: url,
-        form: form,
-        headers: headers
-    }, function(e, r, body) {
-        console.log(e, r, body)
-    })
 }
 
 function replaceVariabledInTextWithValue(text, tag){
@@ -373,7 +351,6 @@ function loadConfig() {
     voteWhiteListed = config["voteWhiteListed"]
     voteNonWhiteListed = config["voteNonWhiteListed"]
     allowComments = config["allowComments"]
-    blissfishApiKey = config["blissfishApiKey"]
     leaveComment = config["leaveComment"]
     blacklistedTags = config["blacklistedTags"]
     whitelistOnlyMode = config["whitelistOnlyMode"]
