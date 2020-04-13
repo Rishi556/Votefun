@@ -13,12 +13,11 @@
     "minimumPowerToVote" : 80,
     "voteWhiteListed" : 100,
     "voteNonWhiteListed" : 25,
-    "privateActiveKey" : "5THEPRIVATEACTIVEKEY",
     "allowComments" : true,
     "apiPassword" : "passwordforapi",
     "extraMessage" : " Want to send an extra message with $upvote messages? Type it out here. Start with an whitespace though.",
     "blacklistedTags": "blacklistedtagsgohereseperatedbyacomma",
     "whitelistOnlyMode" : false,
     "_comment1" : "DO NOT CHANGE ANYTHING BELOW THIS!!!",
-    "version" : "1.2.2"
+    "version" : "1.2.3"
 }
