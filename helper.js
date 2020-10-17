@@ -22,13 +22,13 @@ function shareAnElement(arrayOne, arrayTwo){
     return match
 }
 
-//STEEM STUFF
-var steem = require("steem")
+//Hive STUFF
+let hive = require("@hiveio/hive-js")
 
-steem.api.setOptions({url: 'https://anyx.io'})
+hive.api.setOptions({url: 'https://anyx.io'})
 
 function getVPOfAccount(account, callback){
-    steem.api.getAccounts([account], function (err, response) {
+    hive.api.getAccounts([account], function (err, response) {
         var secondsago = (new Date - new Date(response[0].last_vote_time + "Z")) / 1000;
         var vpow = response[0].voting_power + (10000 * secondsago / 432000);
         var vp = Math.min(vpow / 100, 100).toFixed(2);

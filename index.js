@@ -1,9 +1,7 @@
 const Discord = require('discord.js')
-var steem = require('steem')
-var dsteem = require("dsteem")
+var hive = require('@hiveio/hive-js')
 var fs = require("fs")
 var moment = require("moment")
-var request = require("request")
 var whitelistjs = require("./whitelist.js")
 var api = require("./api")
 var helper = require("./helper.js")
@@ -19,7 +17,7 @@ var token = config["discordToken"]
 var prefix = config["prefix"]
 var botCommandRoleName = config["botCommandRole"]
 var version = config["version"]
-var steemAccount = config["accountName"]
+var hiveAccount = config["hiveAccount"]
 var minTimeWhitelisted = config["minTimeWhitelisted"]
 var maxTimeWhitelisted = config["maxTimeWhitelisted"]
 var minTimeNotWhitelisted = config["minTimeNotWhitelisted"]
@@ -38,9 +36,8 @@ loadWhitelist()
 loadTimes()
 updateMessagesToUser()
 
-steem.api.setOptions({url: 'https://anyx.io'})
+hive.api.setOptions({url: 'https://anyx.io'})
 
-var client = new dsteem.Client('https://anyx.io')
 
 const bot = new Discord.Client();
 
@@ -90,7 +87,7 @@ bot.on('message', message => {
         }
 
         if (command == "upvote") {
-            steem.api.getAccounts([steemAccount], function(err, response) {
+            hive.api.getAccounts([hiveAccount], function(err, response) {
                 var secondsago = (new Date - new Date(response[0].last_vote_time + "Z")) / 1000;
                 var vpow = response[0].voting_power + (10000 * secondsago / 432000);
                 var vp = Math.min(vpow / 100, 100).toFixed(2);
@@ -100,7 +97,7 @@ bot.on('message', message => {
                     whole = whole.split("/")
                     console.log(whole)
                     let wif = config["privatePostingKey"]
-                    let voter = steemAccount
+                    let voter = hiveAccount
                     let author = whole[0].toLowerCase()
                     var permlink = whole[1]
                     try {
@@ -121,7 +118,7 @@ bot.on('message', message => {
                         differenceVoted = 1441
                     }
                     if (differenceVoted >= 1440) {
-                        steem.api.getContent(author, permlink, function(err, result) {
+                        hive.api.getContent(author, permlink, function(err, result) {
 
                             if (err == null) {
                                 var jsonMetadata = JSON.parse(result.json_metadata)
@@ -186,15 +183,15 @@ bot.on('message', message => {
                     }
 
                 } else {
-                    message.channel.send("<@" + message.author.id + "> " + steemAccount + " has " + vp + "% voting power left. " + steemAccount + " only votes when it has at least " + minimumPowerToVote + "% vp. Please try again once that has been reached. To get the current voting power, use " + prefix + "power." + extraMessage)
+                    message.channel.send("<@" + message.author.id + "> " + hiveAccount + " has " + vp + "% voting power left. " + hiveAccount + " only votes when it has at least " + minimumPowerToVote + "% vp. Please try again once that has been reached. To get the current voting power, use " + prefix + "power." + extraMessage)
                 }
             })
         }
 
 
         if (command == "power") {
-            helper.getVPOfAccount(steemAccount, function(vp) {
-                message.channel.send("<@" + message.author.id + "> " + steemAccount + " has " + vp + "% voting power left.")
+            helper.getVPOfAccount(hiveAccount, function(vp) {
+                message.channel.send("<@" + message.author.id + "> " + hiveAccount + " has " + vp + "% voting power left.")
 
             })
         }
@@ -205,10 +202,10 @@ bot.on('message', message => {
                 message.channel.send("<@" + message.author.id + "> The proper waay to use this command is `" + prefix + "value {Vote Weight(Between 0.01 and 100)}`. Please try again.")
                 return
             }
-            steem.api.getRewardFund('post', function(errFunds, responseFunds) {
+            hive.api.getRewardFund('post', function(errFunds, responseFunds) {
                 var rewardBalance = responseFunds.reward_balance.split(" ")[0]
                 var recentClaims = responseFunds.recent_claims
-                steem.api.getAccounts([steemAccount], function(errAccount, responseAccount) {
+                hive.api.getAccounts([hiveAccount], function(errAccount, responseAccount) {
                     var secondsago = (new Date - new Date(responseAccount[0].last_vote_time + "Z")) / 1000;
                     var vpow = responseAccount[0].voting_power + (10000 * secondsago / 432000);
                     var vp = Math.min(vpow / 100, 100).toFixed(2);
@@ -217,14 +214,14 @@ bot.on('message', message => {
                     var sentShares = parseFloat(responseAccount[0].delegated_vesting_shares.split(" ")[0])
                     var totalVestingShares = shares + recievedShares
                     totalVestingShares = totalVestingShares - sentShares
-                    steem.api.getCurrentMedianHistoryPrice(function(errHistory, resultHistory) {
+                    hive.api.getCurrentMedianHistoryPrice(function(errHistory, resultHistory) {
                         var final_vest = totalVestingShares * 1e6
                         var power = (parseFloat(vp) * parseFloat(weight) / 10000) / 50
                         var rshares = power * final_vest / 10000
                         var estimate = null
                         estimate = (rshares / parseFloat(recentClaims) * parseFloat(rewardBalance) * parseFloat(resultHistory.base.split(" ")[0] / resultHistory.quote.split(" ")[0])) * 10000
                         if (estimate != null) {
-                            message.channel.send("<@" + message.author.id + "> " + steemAccount + "'s vote value at " + weight + "% vote weight is estimated to be $" + (Math.round(estimate * 1000) / 1000) + ".")
+                            message.channel.send("<@" + message.author.id + "> " + hiveAccount + "'s vote value at " + weight + "% vote weight is estimated to be $" + (Math.round(estimate * 1000) / 1000) + ".")
                         } else {
                             message.channel.send("<@" + message.author.id + "> The proper way to use this command is `" + prefix + "value {Vote Weight(Between 0.01 and 100)}`. Please try again.")
                         }
@@ -288,13 +285,12 @@ bot.on('message', message => {
 })
 
 function voteNow(wif, voter, author, permlink, weight, message, member) {
-    var key = dsteem.PrivateKey.fromString(wif)
-    client.broadcast.vote({
-        voter: voter,
-        author: author,
-        permlink: permlink,
-        weight: weight
-    }, key).then(function(result) {
+    hive.broadcast.vote(wif, voter, author, permlink, weight, function (err, result) {
+        if (err){
+            var errorMessage = error.message
+            message.channel.send("<@" + message.author.id + "> There was an error with message: " + errorMessage + extraMessage)
+            return
+        }
         var user = message.author.username
 
         if (leaveComment) {
@@ -310,15 +306,12 @@ function voteNow(wif, voter, author, permlink, weight, message, member) {
             message.channel.send("<@" + message.author.id + "> Sucessfully voted on your post." + extraMessage)
         } else {
             message.channel.send("<@" + message.author.id + "> Sucessfully voted on your post. You aren't whitelisted." + extraMessage)
-        }
-    }, function(error) {
-        var errorMessage = error.message
-        message.channel.send("<@" + message.author.id + "> There was an error with message: " + errorMessage + extraMessage)
+        } 
     })
 }
 
 function makeComment(wif, author, permlink, voter, permlink, comment) {
-    steem.broadcast.comment(wif, author, permlink, voter, "re-" + permlink, "title", comment, JSON.stringify({
+    hive.broadcast.comment(wif, author, permlink, voter, "re-" + permlink, "title", comment, JSON.stringify({
         app: 'Discord'
     }), function(err, result) {
         console.log("Left comment on : " + author + " " + permlink)
@@ -327,7 +320,7 @@ function makeComment(wif, author, permlink, voter, permlink, comment) {
 
 function replaceVariabledInTextWithValue(text, tag){
     var editedText = text
-    editedText = editedText.replace(/\{steemAccount\}/g, steemAccount)
+    editedText = editedText.replace(/\{hiveAccount\}/g, hiveAccount)
     editedText = editedText.replace(/\{prefix\}/g, prefix)
     editedText = editedText.replace(/\{botCommandRoleName\}/g, botCommandRoleName)
     editedText = editedText.replace(/\{userToTag\}/g, tag)
@@ -341,7 +334,7 @@ function loadConfig() {
     prefix = config["prefix"]
     botCommandRoleName = config["botCommandRole"]
     version = config["version"]
-    steemAccount = config["steemAccount"]
+    hiveAccount = config["hiveAccount"]
     minTimeWhitelisted = config["minTimeWhitelisted"]
     maxTimeWhitelisted = config["maxTimeWhitelisted"]
     minTimeNotWhitelisted = config["minTimeNotWhitelisted"]

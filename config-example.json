@@ -1,5 +1,5 @@
 {
-    "steemAccount" : "TheIsTheHiveAccountName",
+    "hiveAccount" : "TheIsTheHiveAccountName",
     "privatePostingKey" : "5ThisIsThePrivatePostingKey",
     "leaveComment" : true,
     "comment" : "This is the comment left on posts.",
